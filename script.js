@@ -1,6 +1,7 @@
 // Variables to control game state
 let gameRunning = false; // Keeps track of whether game is active or not
 let dropMaker; // Will store our timer that creates drops regularly
+let countDownInterval; // Will store our countdown timer
 let timerValue; // Will store the total time for timer
 let lives; // Will store lives
 let livesDisplay = document.querySelector("#lives");
@@ -10,7 +11,7 @@ let score = 0;
 let scoreDisplay = document.querySelector("#score");
 const waterCan = document.getElementById("water-can");
 const gameContainer = document.getElementById("game-container");
-
+const initialCanPosition = { left: 350, top: 470 };
 
 let holdingCan = false;
 
@@ -18,23 +19,25 @@ let holdingCan = false;
 
 const canStates = ["img/water-can-transparent.png","img/can-fill1.png","img/can-fill2.png","img/can-fill3.png","img/can-fill4.png"];
 
+const winMess = ["You did great!","You've survived this Winter!", "No Snow is keeping you down"];
+const loseMess = ["Too many sticks in the way!", "You going to need a new water can!", "Too Tired?!"];
+
 // Wait for button click to start the game
 document.getElementById("start-btn").addEventListener("click", startGame);
 
+// Restart button click event
+document.getElementById("restart-btn").addEventListener("click", restartGame);
+
 function startGame() {
-  lives = 3;
-  score = 0;
-  filled = 0;
-  livesDisplay.textContent =   "💧 ".repeat(lives);;
-  timerValue = 30;
-  waterCan.src = canStates[0];
   // Prevent multiple games from running at once
   if (gameRunning) return;
 
+  restartGame(); // Reset game state before starting
+
   gameRunning = true;
 
-  // Create new drops every second (1000 milliseconds)
-  dropMaker = setInterval(createDrop, 500);
+  // Create new drops every half second
+  dropMaker = setInterval(createDrop, 350);
 
   // Start timer
   startCountDown();
@@ -90,7 +93,7 @@ function createDrop() {
 
 // Count down function
 function startCountDown(){
-  const countDownInterval = setInterval(function(){
+  countDownInterval = setInterval(function(){
     // Decrement timer value
     timerValue--;
 
@@ -198,6 +201,25 @@ gameContainer.addEventListener("touchmove", moveCan);
 document.addEventListener("touchend", dropCan);
 
 // Collision check function
+function createConfettiBurst() {
+  const colors = ["#FFC907", "#2E9DF7", "#4FCB53", "#F16061", "#FFFFFF"];
+
+  for (let i = 0; i < 24; i++) {
+    const piece = document.createElement("div");
+    piece.className = "confetti-piece";
+    piece.style.backgroundColor = colors[i % colors.length];
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.top = `${Math.random() * 20 + 10}%`;
+    piece.style.setProperty("--x-offset", `${(Math.random() - 0.5) * 220}px`);
+    piece.style.setProperty("--y-offset", `${Math.random() * 220 + 80}px`);
+    piece.style.setProperty("--rotation", `${Math.random() * 360}deg`);
+    piece.style.setProperty("--delay", `${Math.random() * 0.15}s`);
+    gameContainer.appendChild(piece);
+
+    setTimeout(() => piece.remove(), 1200);
+  }
+}
+
 function checkCollision(drop){
   const collisonInterval = setInterval(()=>{
     if (!drop.parentElement){
@@ -224,6 +246,10 @@ function checkCollision(drop){
           score++;
           scoreDisplay.textContent = score;
           waterCan.src = canStates[0];
+
+          if (score % 5 === 0) {
+            createConfettiBurst();
+          }
         }
       }
       // OBSTACLE
@@ -243,12 +269,73 @@ function checkCollision(drop){
   },50);
 }
 
+function showGameOverModal() {
+  hideGameOverModal();
+
+  const modal = document.createElement("div");
+  modal.id = "game-over-modal";
+
+  const content = document.createElement("div");
+  content.className = "game-over-content";
+
+  const messagePool = lives <= 0 ? loseMess : winMess; // Select array based on lives
+  const randomMessage = messagePool[Math.floor(Math.random() * messagePool.length)];
+
+  content.innerHTML = `
+    <h2>Game Over</h2>
+    <p>${randomMessage}</p>
+    <p>Your score: ${score}</p>
+    <p>Click anywhere to close</p>
+  `;
+
+  content.addEventListener("click", (event) => event.stopPropagation());
+  modal.addEventListener("click", hideGameOverModal);
+
+  modal.appendChild(content);
+  gameContainer.appendChild(modal);
+}
+
+function hideGameOverModal() {
+  const modal = document.getElementById("game-over-modal");
+  if (modal) {
+    modal.remove();
+  }
+}
+
 function gameOver(){
+  if (!gameRunning) return;
 
   gameRunning = false;
 
   clearInterval(dropMaker);
+  clearInterval(countDownInterval);
 
-  alert("Game Over! Score: " + score);
+  showGameOverModal();
 
+}
+
+function restartGame() {
+  hideGameOverModal();
+
+  // Stop any running game timers
+  gameRunning = false;
+  clearInterval(dropMaker);
+  clearInterval(countDownInterval);
+
+  // Remove all existing drops from the screen
+  document.querySelectorAll(".water-drop").forEach((drop) => drop.remove());
+
+  // Reset game values and UI
+  filled = 0;
+  score = 0;
+  lives = 3;
+  timerValue = 30;
+  scoreDisplay.textContent = score;
+  livesDisplay.textContent = "💧 ".repeat(lives);
+  timeDisplay.textContent = timerValue;
+  waterCan.src = canStates[0];
+
+  // Return the can to its initial position
+  waterCan.style.left = `${initialCanPosition.left}px`;
+  waterCan.style.top = `${initialCanPosition.top}px`;
 }

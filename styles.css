@@ -29,7 +29,7 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-color: #f0f0f0;
+    background-color: #f7d64a;
     font-family: Arial, sans-serif;
 }
 
@@ -67,6 +67,10 @@ body {
     width: 800px;
     height: 600px;
     background-color: #e6f7ff;
+    background-image: url('img/blizzards.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     border: 2px solid #333;
     border-radius: 8px;
     position: relative;
@@ -77,7 +81,21 @@ body {
 
 #start-btn {
     padding: 8px 16px;
-    background-color: #4CAF50;
+    background-color: #8BD1CB;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#restart-btn:hover {
+    background-color: #8BD1CB;
+}
+
+#restart-btn {
+    padding: 8px 16px;
+    background-color: #8BD1CB;
     color: white;
     border: none;
     border-radius: 4px;
@@ -86,13 +104,22 @@ body {
 }
 
 #start-btn:hover {
-    background-color: #45a049;
+    background-color:#8BD1CB;
 }
 
 .score {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     flex: 0 1 auto;  /* Don't grow, can shrink, auto basis */
     font-size: 24px;
     font-weight: bold;
+}
+
+.score-can-icon {
+    width: 28px;
+    height: auto;
+    display: inline-block;
 }
 
 /* Water drops */
@@ -101,7 +128,6 @@ body {
     position: absolute;
     animation: dropFall linear forwards;
     cursor: pointer;
-    border: 2px solid blue; /*Hit Box*/
 }
 
 .water-drop img {
@@ -124,15 +150,69 @@ body {
     top: 470px;
     cursor: grab;
     user-select: none;
-    border: 2px solid blue; /*Hit Box*/
 }
 
 #water-can:active {
     cursor: grabbing;
 }
 
+#game-over-modal {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 20;
+    cursor: pointer;
+}
+
+.game-over-content {
+    background: white;
+    color: #222;
+    padding: 24px 28px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    max-width: 280px;
+    width: 80%;
+    cursor: default;
+}
+
+.game-over-content h2 {
+    margin-bottom: 10px;
+    color: #8BD1CB;
+}
+
+.game-over-content p {
+    margin: 6px 0;
+    font-size: 16px;
+}
+
 .bad-drop {
-    border: 2px solid red;
+    
+}
+
+.confetti-piece {
+    position: absolute;
+    width: 10px;
+    height: 18px;
+    border-radius: 2px;
+    opacity: 0.95;
+    animation: confettiFall 1.2s ease-out forwards;
+    animation-delay: var(--delay, 0s);
+    pointer-events: none;
+}
+
+@keyframes confettiFall {
+    0% {
+        transform: translate3d(0, 0, 0) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translate3d(var(--x-offset), var(--y-offset), 0) rotate(var(--rotation, 360deg));
+        opacity: 0;
+    }
 }
 
 .game-title {
@@ -144,7 +224,7 @@ body {
 }
 
 .game-tagline {
-    color: #666;
+    color: #131313;
     font-size: 18px;
     margin-bottom: 20px;
     text-align: center;
@@ -161,10 +241,20 @@ body {
 
 @media (max-width: 850px) {
     .game-wrapper, .score-panel, #game-container {
-        width: 95vw;
+        width: 90vw;
     }
     
     #game-container {
-        height: 70vh;
+        height: 60vh;
+        background-size: cover;
+        background-position: center;
+    }
+
+    #water-can {
+        width: 60px;
+        left: 50%;
+        top: auto;
+        bottom: 12%;
+        transform: translateX(-50%);
     }
 }
